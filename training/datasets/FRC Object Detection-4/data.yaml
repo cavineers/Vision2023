@@ -1,0 +1,13 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+names: ['frc_cone', 'frc_cube']
+
+roboflow:
+  workspace: robotics-ohlqs
+  project: frc-object-detection
+  version: 7
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/robotics-ohlqs/frc-object-detection/dataset/7
