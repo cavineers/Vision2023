@@ -1,6 +1,6 @@
-train: ../train/images
-val: ../valid/images
-test: ../test/images
+train: training/datasets/FRC Object Detection-4/train/images
+val: training/datasets/FRC Object Detection-4/valid/images
+test: training/datasets/FRC Object Detection-4/test/images
 
 nc: 2
 names: ['frc_cone', 'frc_cube']
