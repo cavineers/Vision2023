@@ -2,7 +2,7 @@
 Vision code for 2023 - Charged Up
 
 ## Detection Folder
-- holds (will hold) code for live detection on a Jetson Nano (or tx2 depending on nano performance)
+- holds (will hold) code for live detection on a Jetson Nano (or computer testing)
 ## Information Folder
 - holds information surrounding the entirety of the project (including training workflow/methods)
 

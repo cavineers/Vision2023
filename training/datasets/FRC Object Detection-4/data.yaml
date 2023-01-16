@@ -1,6 +1,6 @@
-train: training/datasets/FRC Object Detection-4/train/images
-val: training/datasets/FRC Object Detection-4/valid/images
-test: training/datasets/FRC Object Detection-4/test/images
+train: ../train/images
+val: ../valid/images
+test: ../test/images
 
 nc: 2
 names: ['frc_cone', 'frc_cube']
@@ -8,6 +8,6 @@ names: ['frc_cone', 'frc_cube']
 roboflow:
   workspace: robotics-ohlqs
   project: frc-object-detection
-  version: 7
+  version: 8
   license: CC BY 4.0
-  url: https://universe.roboflow.com/robotics-ohlqs/frc-object-detection/dataset/7
+  url: https://universe.roboflow.com/robotics-ohlqs/frc-object-detection/dataset/8
