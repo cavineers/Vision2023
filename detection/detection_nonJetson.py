@@ -10,7 +10,7 @@ videoUrl = 'https://youtu.be/s3r1axRoDyQ'
 cap = cap_from_youtube(videoUrl)
 
 # Initialize YOLOv8 model
-model_path = "training/runs/detect/train/weights/best.pt" #training/runs/detect/train/weights/best.pt
+model_path = "training/runs/detect/train3/weights/best.pt" #training/runs/detect/train/weights/best.pt
 model = YOLO(model_path)
 
 cv2.namedWindow("Detected Objects", cv2.WINDOW_NORMAL)
@@ -26,7 +26,7 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break 
-    results = model.predict("https://youtu.be/s3r1axRoDyQ", save=True)
+    results = model.predict(f'{videoUrl}', save=True, conf=.60)
 
 # cap.release()
 #results = model(source="detection/detectionvid.mp4", device='cpu', show=True)
