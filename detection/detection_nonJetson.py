@@ -6,11 +6,11 @@ from ultralytics import YOLO
 #If you are using a video
 
 #If you are inputting a yt video
-videoUrl = 'https://www.youtube.com/watch?v=RhYPPFFWg88'
+videoUrl = 'https://www.youtube.com/watch?v=s3r1axRoDyQ'
 cap = cap_from_youtube(videoUrl)
 
 # Initialize YOLOv8 model
-model_path = "training/runs/detect/train4/weights/best.pt" #training/runs/detect/train/weights/best.pt
+model_path = "training/runs/detect/train6/weights/best.pt" #training/runs/detect/train/weights/best.pt
 model = YOLO(model_path)
 
 cv2.namedWindow("Detected Objects", cv2.WINDOW_NORMAL)
@@ -26,7 +26,4 @@ while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
         break 
-    results = model.predict(f'{videoUrl}', save=True, conf=.60)
-
-# cap.release()
-#results = model(source="detection/detectionvid.mp4", device='cpu', show=True)
+    results = model.predict(source=f'{videoUrl}', save=False, conf=.60)#f'{videoUrl}'
