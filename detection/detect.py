@@ -67,7 +67,8 @@ class Object():
         return z
 
     def calculateWeight(self, area, proximity, distance): #Calculates weights
-        weight = (area * 0.5) + (proximity * 1) + (distance * 2)
+        weight = (area / 0.001 + (proximity * 1) + (distance * 2)
+        print(f'{(area * 0.001)} + {(proximity * 1)} + {(distance * 2)}')
         return weight
     
     def compareWeight(self, f_weight):
