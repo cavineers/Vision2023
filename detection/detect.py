@@ -15,6 +15,8 @@ class Object():
     def __init__(self, object):
         self.screenWidth = 640
         self.screenHeight = 384
+        
+        self.classID = object[5]
 
         self.points = self.getPoints(object)
         self.deltas = self.getDeltas(self.points)
@@ -25,7 +27,7 @@ class Object():
 
         self.weight = self.calculateWeight(self.area, self.proximity, self.distance)
 
-    def getPoints(object):
+    def getPoints(self, object):
         #Top Left Corner on a Non-mirrored input
         x1 = object[0] #x val
         y1 = object[1] #y val
@@ -35,13 +37,13 @@ class Object():
         y2 = object[3]
         return [x1, y1, x2, y2]
 
-    def getDeltas(points):
+    def getDeltas(self, points):
         #Returns the delta (change) in x and y as an array
         deltX = (points[2] - points[0])
         deltY = (points[3] - points[1])
         return [deltX, deltY]
 
-    def getCenter(deltas):
+    def getCenter(self, deltas):
         #Returns the center of the object
         deltX = [deltas[0]]
         deltY = [deltas[1]]
@@ -52,7 +54,7 @@ class Object():
         midY = (deltY[0] / 2)
         return [midX, midY] # Returns the midpoint/center of the object
 
-    def getArea(deltas):
+    def getArea(self, deltas):
         area = (deltas[0] * deltas[1])
         return area
 
@@ -64,11 +66,12 @@ class Object():
         z = np.sqrt(x**2 + y**2)
         return z
 
-    def calculateWeight(area, proximity, distance): #Calculates weights
+    def calculateWeight(self, area, proximity, distance): #Calculates weights
         weight = (area * 0.5) + (proximity * 1) + (distance * 2)
         return weight
     
     def compareWeight(self, f_weight):
+        print("comparing weights")
         if self.weight > f_weight:
             return True
         else:
@@ -82,38 +85,29 @@ Solving for 3D Measurements of an object
 
 
 
-def determineFocus(object, f_weight): #Determines what object is in focus
-    '''
-        This function compares two objects based off a weight system
-        
-        Weights:
-        Area: x0.5
-        Position on Screen: x1
-        Distance: x2
-    '''
-
-
-
-
 
 
 
 def main():
     
     results = model(source=1, imgsz=640, return_outputs=True, conf=.60) #Starts inferencing
-
     while True:
-        focusedObj = None
-        focusedWeight = 0
-        for resultDict in results:
-            if resultDict:
-                for object in resultDict['det']:
-                    focused, weight = determineFocus(object, focusedWeight)
-                    if focused: # If the object is determined to be focused
-                        focusedObj = object
-                        focusedWeight = weight
-            else: # No results -- Dict doesn't exist
-                print('No results')
+        print("Initilizing")
+        for dict in results:
+            focusedObj = None # Placeholder for focused object
+            if not dict: # If no results, continue
+                print("No Results") 
+                continue 
+            for object in dict['det']:
+                m_object = Object(object)
+                if not focusedObj: #See if there is a focused object if not set it to the first object
+                    focusedObj = m_object
+                    continue
+                if m_object.compareWeight(focusedObj.weight):
+                    focusedObj = m_object
+            print("Focused Object: ", focusedObj.classID)
+        
+                    
 
 if __name__ == '__main__':
     main()
