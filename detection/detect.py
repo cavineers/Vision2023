@@ -9,32 +9,49 @@ model = YOLO(model_path)
 results = model.predict(source=1, return_outputs=True) #Starts inferencing
 
 
-def getDelta(x1, y1, x2, y2):
+def getPoints(object):
+    #Top Left Corner on a Non-mirrored input
+    x1 = object[0] #x val
+    y1 = object[1] #y val
+
+    #Bottom Right Corner on a Non-mirrored input
+    x2 = object[2]
+    y2 = object[3]
+    return [x1, y1, x2, y2]
+def getDelta(points):
     #Returns the delta (change) in x and y as an array
-    deltX = (x2 - x1)
-    deltY = (y2 - y1)
+    deltX = (points[2] - points[0])
+    deltY = (points[3] - points[1])
     return [deltX, deltY]
 
-def getArea(deltaX, deltaY):
-    area = (deltaX * deltaY)
+def getArea(deltas):
+    area = (deltas[0] * deltas[1])
     return area
 
+def compareArea(largest, currentArea):
+    if currentArea > currentArea:
+        return currentArea
+    else:
+        return largest
+
+def determineFocus(object):
+    points = getPoints(object=object)
+    deltas = getDelta(points)
+    
+
+
+
+
 def main():
-    for resultDict in results:
-        if resultDict:
-            #resultDict Format --> {'det': array([[       1666(X1),         398(Y1),        1914(X2),         593(Y2),     0.78452(Conf),           1]], dtype=float32)}ß
-            for object in resultDict['det']: #object contains a list containing object data 
-                #Top Left Corner on a Non-mirrored input
-                x1 = object[0] #x val
-                y1 = object[1] #y val
-
-                #Bottom Right Corner on a Non-mirrored input
-                x2 = object[2]
-                y2 = object[3]
-                #print(f'X1: {x1} Y1: {y1} \n X2: {x2} Y2: {y2}')
-
-        else: # No results -- Dict doesn't exist
-            print('No results')
+    while True:
+        focusedObj = None # Reset the focused obj every full iteration
+        for resultDict in results:
+            if resultDict:
+                focused = determineFocus(object)
+                if focused: # If the object is determined to be focused
+                    focusedObj = object 
+            else: # No results -- Dict doesn't exist
+                print('No results')
 
 if __name__ == '__main__':
     main()
