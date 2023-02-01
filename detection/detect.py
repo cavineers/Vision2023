@@ -1,11 +1,26 @@
 import cv2
 import numpy as np
 import math
+import onnx
+import onnxruntime as ort
 
 from ultralytics import YOLO
 
+
+ort_session = ort.InferenceSession("alexnet.onnx")
+
+outputs = ort_session.run(
+    None,
+    {"actual_input_1": np.random.randn(10, 3, 224, 224).astype(np.float32)},
+)
+print(outputs[0])
+
 # Initialize YOLOv8 model
-net = cv2.dnn.readNetFromONNX('detection/finalweights/best.onnx')
+#net = cv2.dnn.readNetFromONNX('detection/finalweights/model.onnx')
+net = onnx.load('detection/finalweights/model.onnx')
+
+onnx.checker.check_model(net)
+
 
 
 class angleSolver():
