@@ -16,6 +16,11 @@ def train():
     training = model.train(data="training/datasets/FRC Object Detection-4/data.yaml", epochs=100)  #epochs can just be 25-30...
     training = model.val()  # evaluate model performance on the validation set
 
+def export():
+    model = YOLO("training/runs/detect/train7/weights/best.pt")
+
+    model.val()
+    model.export("training/runs/detect/train7/weights/best.onnx")
 
 if __name__ == "__main__":
-    train()
+    export()

@@ -5,8 +5,7 @@ import math
 from ultralytics import YOLO
 
 # Initialize YOLOv8 model
-model_path = "training/runs/detect/train7/weights/best.pt" #training/runs/detect/train/weights/best.pt
-model = YOLO(model_path)
+net = cv2.dnn.readNetFromONNX('detection/finalweights/best.onnx')
 
 
 class angleSolver():
@@ -116,32 +115,32 @@ Solving for 3D Measurements of an object
 
 
 
-def main():
+#def main():
     
-    results = model(source=0, imgsz=640, return_outputs=True, conf=.60) #Starts inferencing
-    while True:
-        print("Initilizing")
-        for dict in results:
-            focusedObj = None # Placeholder for focused object
-            if not dict: # If no results, continue
-                print("No Results") 
-                continue 
-            for object in dict['det']:
-                m_object = Object(object)
-                if not focusedObj: #See if there is a focused object if not set it to the first object
-                    focusedObj = m_object
-                elif m_object.compareWeight(focusedObj.weight):
-                    focusedObj = m_object
-                else:
-                    continue
-                angle = angleSolver(m_object)
-                print(angle)
-                if m_object.compareWeight(focusedObj.weight):
-                    focusedObj = m_object
-            #print("Focused Object: ", focusedObj.classID)
+    # results = model(source=0, imgsz=640, return_outputs=True, conf=.60) #Starts inferencing
+    # while True:
+    #     print("Initilizing")
+    #     for dict in results:
+    #         focusedObj = None # Placeholder for focused object
+    #         if not dict: # If no results, continue
+    #             print("No Results") 
+    #             continue 
+    #         for object in dict['det']:
+    #             m_object = Object(object)
+    #             if not focusedObj: #See if there is a focused object if not set it to the first object
+    #                 focusedObj = m_object
+    #             elif m_object.compareWeight(focusedObj.weight):
+    #                 focusedObj = m_object
+    #             else:
+    #                 continue
+    #             angle = angleSolver(m_object)
+    #             print(angle)
+    #             if m_object.compareWeight(focusedObj.weight):
+    #                 focusedObj = m_object
+    #         #print("Focused Object: ", focusedObj.classID)
         
                     
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
 
