@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 from ultralytics import YOLO
 
@@ -13,18 +14,26 @@ class angleSolver():
     def __init__(self, object):
         self.object = object.object
         self.classID = object.classID
-        self.points = object.getPoints()
-        self.imgPoints = np.array(self.getAllPoints())
-        self.cubeDimensions = [0.24, 0.24, 0.24] #in meters Length, Width, Height
-        self.coneDimensions = [0.21, 0.21, 0.33] #in meters Length, Width, Height
-        self.rvec, self.tvec = self.solvePNP()
+
+        self.horizontalFOV = 0
+        self.screenWidth = 640
+
+        self.centerOfBox = object.getCenter()
+        self.centerOfScreen = self.screenWidth/2
+
+        self.angleToObj = self.solveAngle()
     
-    def getAllPoints(self): #From a two points return the missing points of a rectangle
-        bottomLeft = [self.points[0], self.points[1]] #0X1, 1Y1, 2X2, 3Y2
-        bottomRight = [self.points[2], self.points[1]]
-        topLeft = [self.points[0], self.points[3]]
-        topRight = [self.points[2], self.points[3]]
-        return [bottomLeft,  topRight, bottomRight, topLeft]
+    def getMagToObject(self): #Gets the straight line object center of screen -> center of box
+        return math.dist(self.centerOfBox[0], self.centerOfScreen)
+    
+    def solveAngle(self):
+        degreesPerPixel = self.horizontalFOV / self.screenWidth
+        distanceFromCenter = self.getMagToObject() # Distance from center of screen to center of box in pixels
+        angle = distanceFromCenter * degreesPerPixel # Get Angle by Multiplying number of pixels by degrees per pixel
+        return angle
+    
+
+
     
 
         
@@ -42,7 +51,6 @@ class Object():
         self.area = self.getArea(self.deltas)
         self.center = self.getCenter(self.deltas)
         self.proximity = self.getProximityCenter(self.center)
-        self.distance = 1 # Placeholder for distance
 
         self.weight = self.calculateWeight()
 
@@ -87,7 +95,7 @@ class Object():
         return z
 
     def calculateWeight(self): #Calculates weights
-        weight = (self.area / 0.001) + (self.proximity * 1) + (self.distance * 2)
+        weight = (self.area / 0.001) + (self.proximity * 1)
         #print(f'{(self.area * 0.001)} + {(self.proximity * 1)} + {(self.distance * 2)}')
         return weight
     
@@ -126,8 +134,8 @@ def main():
                     focusedObj = m_object
                 else:
                     continue
-                m_pnpChild = pnpSolver(m_object)
-                
+                angle = angleSolver(m_object)
+                print(angle)
                 if m_object.compareWeight(focusedObj.weight):
                     focusedObj = m_object
             #print("Focused Object: ", focusedObj.classID)
