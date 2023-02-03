@@ -20,9 +20,11 @@ class angleSolver():
     def __init__(self, object):
         self.object = object.object
         self.classID = object.classID
+        #{'camera_matrix': [[643.0670113435275, 0.0, 335.84280365212254], [0.0, 643.707286745522, 235.6479090499678], [0.0, 0.0, 1.0]], 'dist_coeff': [[0.1079136908563107, -0.27782663196545354, -0.007001079319522151, 0.011349055116735158, 0.43880747269761905]]}
 
-        self.horizontalFOV = 70.4
-        self.screenWidth = 384
+        self.fx = 643.0670113435275
+        self.horizontalFOV = (2*math.atan(640/(2*self.fx)))
+        self.screenWidth = 640
 
         self.centerOfBox = object.getCenter()
         self.centerOfScreen = self.screenWidth/2
@@ -48,11 +50,12 @@ class angleSolver():
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Object():
 
-    def __init__(self, object):
+    def __init__(self, object, id):
         self.screenWidth = 640
-        self.screenHeight = 384
+        self.screenHeight = 640
         self.object = object
-        self.classID = object[5]
+        
+        self.classID = id
 
         self.points = self.getPoints()
         self.deltas = self.getDeltas(self.points)
@@ -64,7 +67,7 @@ class Object():
 
     def getPoints(self):
         #Top Left Corner on a Non-mirrored input
-
+        self
         x1 = self.object[0] #x val
         y1 = self.object[1] #y val
 
@@ -104,11 +107,12 @@ class Object():
 
     def calculateWeight(self): #Calculates weights
         weight = (math.sqrt(self.area)) + (self.proximity * 1)
-        #print(f'{(self.area * 0.001)} + {(self.proximity * 1)} + {(self.distance * 2)}')
         return weight
     
     def compareWeight(self, f_weight):
-        if self.weight > f_weight:
+        if f_weight == None:
+            return True
+        elif self.weight > f_weight:
             return True
         else:
             return False
@@ -244,29 +248,47 @@ class cameraHandler():
     def __init__(self, src):
         self.src = src
         self.cap = cv2.VideoCapture(self.src)
-    
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640) # Set camera input height
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set camera input width
     def getFrame(self):
         ret, frame = self.cap.read()
         return frame
 
 
 
-
 if __name__ == '__main__':
-    cam = cameraHandler(1)
+    # Initialize YOLOv8 object detector
+    model_path = "detection/finalweights/model.onnx"
+    cam = cameraHandler(0)
+    yolov8Detector = YOLOv8(model_path, conf_thres=0.6, iou_thres=0.5)
     while True:
-        model_path = "detection/finalweights/model.onnx"
-
-        # Initialize YOLOv8 object detector
-        yolov8Detector = YOLOv8(model_path, conf_thres=0.6, iou_thres=0.5)
-
         img = cam.getFrame()
         if type(img) == type(None):
             continue
         # Detect Objects
-        yolov8Detector(img)
+        inference = yolov8Detector(img)
+        '''
+        inference[0] = x, y, x2, y2
+        inference[1] = confidence
+        inference[2] = classID
+        '''
+        #get the object with the highest weight
+        currentFocusObj = None
+        for obj in inference[0]:
+            if len(obj) == 0 or not np.all(obj >= 0): #if the object is empty or has a negative value, skip this inference
+                continue
+            classID = inference[2][0]
+            object = Object(obj, classID)
+            if object.compareWeight(currentFocusObj):
+                currentFocusObj = object
+            print(currentFocusObj.classID)
+        
 
-        # Draw detections
+
+        #object = Object(inference)
+        #angleSolver(object)
+        #print(f'Angle to Obj: {inference} degrees')
+        #Draw detections
         combined_img = yolov8Detector.draw_detections(img)
         cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
         cv2.imshow("Output", combined_img)
