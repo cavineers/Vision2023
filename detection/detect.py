@@ -23,7 +23,7 @@ class angleSolver():
         #{'camera_matrix': [[643.0670113435275, 0.0, 335.84280365212254], [0.0, 643.707286745522, 235.6479090499678], [0.0, 0.0, 1.0]], 'dist_coeff': [[0.1079136908563107, -0.27782663196545354, -0.007001079319522151, 0.011349055116735158, 0.43880747269761905]]}
 
         self.fx = 643.0670113435275
-        self.horizontalFOV = (2*math.atan(640/(2*self.fx)))
+        self.horizontalFOV = np.rad2deg((2*math.atan(640/(2*self.fx))))
         self.screenWidth = 640
 
         self.centerOfBox = object.getCenter()
@@ -38,7 +38,6 @@ class angleSolver():
     def solveAngle(self):
         degreesPerPixel = self.horizontalFOV / self.screenWidth
         distanceFromCenter = self.getMagToObject() # Distance from center of screen to center of box in pixels
-        print(distanceFromCenter)
         angle = distanceFromCenter * degreesPerPixel # Get Angle by Multiplying number of pixels by degrees per pixel
         return angle
     
@@ -89,8 +88,8 @@ class Object():
 
         #Determine Midpoints
 
-        midX = (deltX[0] / 2)
-        midY = (deltY[0] / 2)
+        midX = (deltX[0] / 2) + self.points[0]
+        midY = (deltY[0] / 2) + self.points[1]
         return [midX, midY] # Returns the midpoint/center of the object
 
     def getArea(self, deltas):
@@ -109,10 +108,10 @@ class Object():
         weight = (math.sqrt(self.area)) + (self.proximity * 1)
         return weight
     
-    def compareWeight(self, f_weight):
-        if f_weight == None:
+    def compareWeight(self, f_object):
+        if f_object == None:
             return True
-        elif self.weight > f_weight:
+        elif self.weight > f_object.weight:
             return True
         else:
             return False
@@ -250,6 +249,7 @@ class cameraHandler():
         self.cap = cv2.VideoCapture(self.src)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640) # Set camera input height
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set camera input width
+        self.cap.set(cv2.CAP_PROP_FPS, 30) # Set camera frame rate
     def getFrame(self):
         ret, frame = self.cap.read()
         return frame
@@ -265,6 +265,8 @@ if __name__ == '__main__':
         img = cam.getFrame()
         if type(img) == type(None):
             continue
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
         # Detect Objects
         inference = yolov8Detector(img)
         '''
@@ -272,8 +274,14 @@ if __name__ == '__main__':
         inference[1] = confidence
         inference[2] = classID
         '''
+        combined_img = yolov8Detector.draw_detections(img)
+        cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
+        cv2.imshow("Output", combined_img)
+
+        
         #get the object with the highest weight
         currentFocusObj = None
+        
         for obj in inference[0]:
             if len(obj) == 0 or not np.all(obj >= 0): #if the object is empty or has a negative value, skip this inference
                 continue
@@ -281,20 +289,14 @@ if __name__ == '__main__':
             object = Object(obj, classID)
             if object.compareWeight(currentFocusObj):
                 currentFocusObj = object
-            print(currentFocusObj.classID)
+
+
         
-
-
-        #object = Object(inference)
-        #angleSolver(object)
-        #print(f'Angle to Obj: {inference} degrees')
-        #Draw detections
-        combined_img = yolov8Detector.draw_detections(img)
-        cv2.namedWindow("Output", cv2.WINDOW_NORMAL)
-        cv2.imshow("Output", combined_img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
+        
+        if currentFocusObj == None:
+            continue
+        focusObjAngleSolver = angleSolver(currentFocusObj)
+        print(f'Angle to Obj: {focusObjAngleSolver.angleToObj}°')
     cv2.destroyAllWindows()
 
 
