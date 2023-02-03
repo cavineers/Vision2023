@@ -5,32 +5,28 @@ import onnx
 import onnxruntime as ort
 import time
 
-from ultralytics import YOLO
 from utils import xywh2xyxy, nms, draw_detections
-
-
-# Initialize YOLOv8 model
-
-
-
 
 
 class angleSolver():
     
-    def __init__(self, object):
-        self.object = object.object
-        self.classID = object.classID
+    def __init__(self,):
+        
         #{'camera_matrix': [[643.0670113435275, 0.0, 335.84280365212254], [0.0, 643.707286745522, 235.6479090499678], [0.0, 0.0, 1.0]], 'dist_coeff': [[0.1079136908563107, -0.27782663196545354, -0.007001079319522151, 0.011349055116735158, 0.43880747269761905]]}
 
         self.fx = 643.0670113435275
         self.horizontalFOV = np.rad2deg((2*math.atan(640/(2*self.fx))))
         self.screenWidth = 640
-
-        self.centerOfBox = object.getCenter()
         self.centerOfScreen = self.screenWidth/2
 
+
+    def __call__(self, object):
+        self.object = object.object
+        self.classID = object.classID
+        self.centerOfBox = object.getCenter()
         self.angleToObj = self.solveAngle()
-    
+
+        return self.angleToObj
     def getMagToObject(self): #Gets the straight line object center of screen -> center of box
         mag = (self.centerOfScreen - self.centerOfBox[0])
         return mag
@@ -41,12 +37,7 @@ class angleSolver():
         angle = distanceFromCenter * degreesPerPixel # Get Angle by Multiplying number of pixels by degrees per pixel
         return angle
     
-
-
-    
-
         
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Object():
 
     def __init__(self, object, id):
@@ -115,8 +106,6 @@ class Object():
             return True
         else:
             return False
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 
 class YOLOv8:
@@ -259,8 +248,13 @@ class cameraHandler():
 if __name__ == '__main__':
     # Initialize YOLOv8 object detector
     model_path = "detection/finalweights/model.onnx"
+    
+
+    # Init Classes
+    angleSolver = angleSolver()
     cam = cameraHandler(0)
     yolov8Detector = YOLOv8(model_path, conf_thres=0.6, iou_thres=0.5)
+
     while True:
         img = cam.getFrame()
         if type(img) == type(None):
@@ -291,12 +285,13 @@ if __name__ == '__main__':
                 currentFocusObj = object
 
 
-        
-        
         if currentFocusObj == None:
             continue
-        focusObjAngleSolver = angleSolver(currentFocusObj)
-        print(f'Angle to Obj: {focusObjAngleSolver.angleToObj}°')
+        angleToObject = angleSolver(currentFocusObj)
+        print(f'Angle to Obj: {angleToObject}°')
+
+
+
     cv2.destroyAllWindows()
 
 
