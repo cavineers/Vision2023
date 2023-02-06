@@ -5,6 +5,8 @@ import onnx
 import onnxruntime as ort
 import time
 
+#Networking
+from network import Network
 from utils import xywh2xyxy, nms, draw_detections
 
 
@@ -254,7 +256,7 @@ if __name__ == '__main__':
     angleSolver = angleSolver()
     cam = cameraHandler(0)
     yolov8Detector = YOLOv8(model_path, conf_thres=0.6, iou_thres=0.5)
-
+    network = Network()
     while True:
         img = cam.getFrame()
         if type(img) == type(None):
@@ -288,6 +290,7 @@ if __name__ == '__main__':
         if currentFocusObj == None:
             continue
         angleToObject = angleSolver(currentFocusObj)
+        Network.publish([angleToObject, currentFocusObj.classID])
         print(f'Angle to Obj: {angleToObject}°')
 
 
