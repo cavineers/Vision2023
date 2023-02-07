@@ -290,7 +290,8 @@ if __name__ == '__main__':
         if currentFocusObj == None:
             continue
         angleToObject = angleSolver(currentFocusObj)
-        Network.publish([angleToObject, currentFocusObj.classID])
+        vals = [angleToObject, currentFocusObj.classID]
+        network.publish(vals)
         print(f'Angle to Obj: {angleToObject}°')
 
 
