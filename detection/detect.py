@@ -240,7 +240,7 @@ class cameraHandler():
         self.cap = cv2.VideoCapture(self.src)
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 640) # Set camera input height
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640) # Set camera input width
-        self.cap.set(cv2.CAP_PROP_FPS, 30) # Set camera frame rate
+        self.cap.set(cv2.CAP_PROP_FPS, 60) # Set camera frame rate
     def getFrame(self):
         ret, frame = self.cap.read()
         return frame
@@ -249,7 +249,7 @@ class cameraHandler():
 
 if __name__ == '__main__':
     # Initialize YOLOv8 object detector
-    model_path = "detection/finalweights/model.onnx"
+    model_path = "detection/finalweights/best.onnx"
     
 
     # Init Classes
@@ -258,6 +258,7 @@ if __name__ == '__main__':
     yolov8Detector = YOLOv8(model_path, conf_thres=0.6, iou_thres=0.5)
     network = Network()
     while True:
+        stime = time.time()
         img = cam.getFrame()
         if type(img) == type(None):
             continue
@@ -292,7 +293,8 @@ if __name__ == '__main__':
         angleToObject = angleSolver(currentFocusObj)
         vals = [angleToObject, currentFocusObj.classID]
         network.publish(vals)
-        print(f'Angle to Obj: {angleToObject}°')
+        print(f'Angle to Obj: {angleToObject}° \n ClassID: {currentFocusObj.classID} \n FPS: {1/(time.time()-stime)}')
+
 
 
 
