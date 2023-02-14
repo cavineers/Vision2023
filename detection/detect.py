@@ -123,7 +123,7 @@ class YOLOv8:
         return self.detect_objects(image)
 
     def initialize_model(self, path):
-        self.session = ort.InferenceSession(path)
+        self.session = ort.InferenceSession(path, providers=['CPUExecutionProvider'])
         # Get model info
         self.get_input_details()
         self.get_output_details()
@@ -249,7 +249,7 @@ class cameraHandler():
 
 if __name__ == '__main__':
     # Initialize YOLOv8 object detector
-    model_path = "detection/finalweights/best.onnx"
+    model_path = "finalweights/float32Model.onnx"
     
 
     # Init Classes
